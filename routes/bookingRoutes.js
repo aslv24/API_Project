@@ -18,6 +18,7 @@ const role = require('../middleware/roleMiddleware');
  *   get:
  *     summary: Get all bookings
  *     tags: [Bookings]
+ *     description: Admin gets all bookings. Customer gets only their own bookings.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -50,6 +51,7 @@ router.get('/', auth.bearerAuth, controller.getBookings);
  *   post:
  *     summary: Create a booking
  *     tags: [Bookings]
+ *     description: Admin can create bookings for any customer. Customer bookings are always created for the logged-in customer's own `customerId`.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -97,6 +99,7 @@ router.put(
  *   patch:
  *     summary: Update a booking
  *     tags: [Bookings]
+ *     description: Admin can update all booking fields. Customer can update only their own booking details and cannot change booking owner or status.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -166,6 +169,7 @@ router.put(
  *   delete:
  *     summary: Delete a booking
  *     tags: [Bookings]
+ *     description: Admin can delete any booking. Customer can delete only their own booking.
  *     security:
  *       - bearerAuth: []
  *     parameters:

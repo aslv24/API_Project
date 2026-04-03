@@ -22,6 +22,96 @@ const options = {
                 }
             },
             schemas: {
+                LoginRequest: {
+                    type: "object",
+                    required: ["username", "password"],
+                    properties: {
+                        username: {
+                            type: "string",
+                            example: "admin"
+                        },
+                        password: {
+                            type: "string",
+                            example: "1234"
+                        }
+                    }
+                },
+                RegisterRequest: {
+                    type: "object",
+                    required: ["name", "phone", "username", "password"],
+                    properties: {
+                        name: {
+                            type: "string",
+                            example: "Keerthana Nair"
+                        },
+                        phone: {
+                            type: "string",
+                            example: "9123456789"
+                        },
+                        username: {
+                            type: "string",
+                            example: "keerthana"
+                        },
+                        password: {
+                            type: "string",
+                            example: "1234"
+                        }
+                    }
+                },
+                LoginResponse: {
+                    type: "object",
+                    properties: {
+                        token: {
+                            type: "string",
+                            example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                        },
+                        user: {
+                            type: "object",
+                            properties: {
+                                id: { type: "integer", example: 1 },
+                                username: { type: "string", example: "admin" },
+                                role: {
+                                    type: "string",
+                                    enum: ["admin", "customer"],
+                                    example: "admin"
+                                },
+                                customerId: {
+                                    type: "integer",
+                                    nullable: true,
+                                    example: null
+                                }
+                            }
+                        },
+                        role: {
+                            type: "string",
+                            enum: ["admin", "customer"],
+                            example: "admin"
+                        },
+                        message: {
+                            type: "string",
+                            example: "Login successful"
+                        }
+                    }
+                },
+                RegisterResponse: {
+                    allOf: [
+                        {
+                            $ref: '#/components/schemas/LoginResponse'
+                        },
+                        {
+                            type: "object",
+                            properties: {
+                                customer: {
+                                    $ref: '#/components/schemas/Customer'
+                                },
+                                message: {
+                                    type: "string",
+                                    example: "Registration successful"
+                                }
+                            }
+                        }
+                    ]
+                },
                 Room: {
                     type: "object",
                     properties: {
@@ -49,6 +139,7 @@ const options = {
                         id: { type: "integer", example: 1 },
                         roomId: { type: "integer", example: 1 },
                         customerId: { type: "integer", example: 1 },
+                        createdByUserId: { type: "integer", example: 2 },
                         fromDate: {
                             type: "string",
                             example: "2026-04-02"
