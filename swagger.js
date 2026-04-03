@@ -10,7 +10,7 @@ const options = {
         },
         servers: [
             {
-                url: "https://api-project-yuo0.onrender.com"
+                url: "https://api-project-yuo0.onrender.com/api/v1"
             }
         ],
         components: {
@@ -65,10 +65,7 @@ const options = {
                     }
                 }
             }
-        },
-        security: [
-            { bearerAuth: [] }
-        ]
+        }
     },
 
     apis: ["./routes/*.js"]
