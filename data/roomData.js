@@ -1,15 +1,22 @@
-let rooms = [
-    { id: 1, type: "Single", price: 1000, available: true },
-    { id: 2, type: "Single", price: 1200, available: true },
-    { id: 3, type: "Double", price: 2000, available: true },
-    { id: 4, type: "Double", price: 2200, available: true },
-    { id: 5, type: "Deluxe", price: 3000, available: true },
-    { id: 6, type: "Deluxe", price: 3200, available: true },
-    { id: 7, type: "Suite", price: 5000, available: true },
-    { id: 8, type: "Suite", price: 5500, available: true },
-    { id: 9, type: "Premium Suite", price: 8000, available: true },
-    { id: 10, type: "Premium Suite", price: 8500, available: true }
-];
+const roomTypes = ['Single', 'Double', 'Deluxe', 'Suite', 'Premium Suite'];
+const basePrices = {
+  Single: 1400,
+  Double: 2400,
+  Deluxe: 3600,
+  Suite: 5600,
+  'Premium Suite': 8200
+};
+
+const rooms = Array.from({ length: 60 }, (_, index) => {
+  const id = index + 1;
+  const type = roomTypes[index % roomTypes.length];
+
+  return {
+    id,
+    type,
+    price: basePrices[type] + (Math.floor(index / roomTypes.length) * 250),
+    available: id % 7 !== 0
+  };
+});
 
 module.exports = rooms;
-

@@ -1,34 +1,28 @@
 const bcrypt = require('bcryptjs');
+const customers = require('./customerData');
+
+const defaultPassword = bcrypt.hashSync('1234', 8);
 
 const users = [
   {
     id: 1,
     username: 'admin',
-    password: bcrypt.hashSync('1234', 8),
+    password: defaultPassword,
     role: 'admin',
     customerId: null
   },
-  {
-    id: 2,
-    username: 'raj',
-    password: bcrypt.hashSync('1234', 8),
-    role: 'customer',
-    customerId: 1
-  },
-  {
-    id: 3,
-    username: 'arun',
-    password: bcrypt.hashSync('1234', 8),
-    role: 'customer',
-    customerId: 2
-  },
-  {
-    id: 4,
-    username: 'vijay',
-    password: bcrypt.hashSync('1234', 8),
-    role: 'customer',
-    customerId: 3
-  }
+  ...customers.slice(0, 60).map((customer, index) => {
+    const fallbackUsername = `customer${customer.id}`;
+    const preferredUsernames = ['raj', 'arun', 'vijay'];
+
+    return {
+      id: index + 2,
+      username: preferredUsernames[index] || fallbackUsername,
+      password: defaultPassword,
+      role: 'customer',
+      customerId: customer.id
+    };
+  })
 ];
 
 module.exports = users;
