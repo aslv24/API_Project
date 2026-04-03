@@ -6,6 +6,11 @@ const swaggerSpec = require('./swagger');
 
 app.use(express.json());
 
+// ✅ Root route (IMPORTANT FIX)
+app.get("/", (req, res) => {
+  res.send("Hotel Booking API is running 🚀");
+});
+
 // Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -16,7 +21,7 @@ app.use('/api/v1/bookings', require('./routes/bookingRoutes'));
 app.use('/api/v1', require('./routes/authRoutes'));
 app.use('/api/v1/upload', require('./routes/uploadRoutes'));
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // ✅ better for deployment
 app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
