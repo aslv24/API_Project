@@ -10,7 +10,7 @@ const options = {
         },
         servers: [
             {
-                url: "http://localhost:3000/api/v1"
+                url: "https://api-project-yuo0.onrender.com"
             }
         ],
         components: {
