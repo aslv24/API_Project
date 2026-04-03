@@ -2,6 +2,11 @@ let bookings = require('../data/bookingData');
 let rooms = require('../data/roomData');
 let customers = require('../data/customerData');
 
+const isAdmin = req => req.user.role === 'admin';
+
+const canAccessBooking = (req, booking) =>
+  isAdmin(req) || booking.customerId === req.user.customerId;
+
 exports.getBookings = (req, res) => {
 const { status } = req.query;
 let { page = 1, limit = 5 } = req.query;
@@ -11,8 +16,12 @@ limit = parseInt(limit);
 
 let result = bookings;
 
+if (!isAdmin(req)) {
+    result = result.filter(b => b.customerId === req.user.customerId);
+}
+
 if (status) {
-    result = bookings.filter(b => b.status === status.toUpperCase());
+    result = result.filter(b => b.status === status.toUpperCase());
 }
 
 const start = (page - 1) * limit;
@@ -29,9 +38,10 @@ res.json({
 
 exports.createBooking = (req, res) => {
 const { roomId, customerId, fromDate, toDate } = req.body;
+const effectiveCustomerId = isAdmin(req) ? customerId : req.user.customerId;
 
 const room = rooms.find(r => r.id == roomId);
-const customer = customers.find(c => c.id == customerId);
+const customer = customers.find(c => c.id == effectiveCustomerId);
 
 if (!room || !customer) {
     return res.status(404).json({ message: "Room or Customer not found" });
@@ -49,7 +59,8 @@ if (isBooked) {
 const booking = {
     id: bookings.length + 1,
     roomId,
-    customerId,
+    customerId: effectiveCustomerId,
+    createdByUserId: req.user.userId,
     fromDate,
     toDate,
     status: "PENDING"
@@ -71,11 +82,19 @@ if (!booking) {
     return res.status(404).json({ message: "Booking not found" });
 }
 
+if (!canAccessBooking(req, booking)) {
+    return res.status(403).json({ message: "Access denied" });
+}
+
 const nextRoomId = req.body.roomId ?? booking.roomId;
-const nextCustomerId = req.body.customerId ?? booking.customerId;
+const nextCustomerId = isAdmin(req)
+    ? (req.body.customerId ?? booking.customerId)
+    : booking.customerId;
 const nextFromDate = req.body.fromDate ?? booking.fromDate;
 const nextToDate = req.body.toDate ?? booking.toDate;
-const nextStatus = req.body.status ?? booking.status;
+const nextStatus = isAdmin(req)
+    ? (req.body.status ?? booking.status)
+    : booking.status;
 
 const room = rooms.find(r => r.id == nextRoomId);
 const customer = customers.find(c => c.id == nextCustomerId);
@@ -124,6 +143,10 @@ const bookingIndex = bookings.findIndex(b => b.id == req.params.id);
 
 if (bookingIndex === -1) {
     return res.status(404).json({ message: "Booking not found" });
+}
+
+if (!canAccessBooking(req, bookings[bookingIndex])) {
+    return res.status(403).json({ message: "Access denied" });
 }
 
 const deletedBooking = bookings.splice(bookingIndex, 1)[0];

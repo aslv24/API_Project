@@ -2,14 +2,9 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const users = require('../data/userData');
 
-const SECRET_KEY = "mysecretkey";
-
-const user = {
-  username: "admin",
-  password: bcrypt.hashSync("1234", 8),
-  role: "admin"
-};
+const SECRET_KEY = process.env.JWT_SECRET || 'mysecretkey';
 
 /**
  * @swagger
@@ -45,8 +40,9 @@ const user = {
  */
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
+  const user = users.find(u => u.username === username);
 
-  if (username !== user.username) {
+  if (!user) {
     return res.status(401).json({ message: "User not found" });
   }
 
@@ -57,13 +53,27 @@ router.post('/login', (req, res) => {
   }
 
   const token = jwt.sign(
-    { username: user.username, role: user.role },
+    {
+      userId: user.id,
+      username: user.username,
+      role: user.role,
+      customerId: user.customerId
+    },
     SECRET_KEY,
-    { expiresIn: "1h" }
+    {
+      expiresIn: "1h",
+      jwtid: `${user.id}-${Date.now()}`
+    }
   );
 
   res.json({
     token,
+    user: {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      customerId: user.customerId
+    },
     role: user.role,
     message: "Login successful"
   });
