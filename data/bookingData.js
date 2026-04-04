@@ -1,8 +1,8 @@
-const statuses = ['PENDING', 'CONFIRMED', 'CANCELLED'];
+const statuses = ['PENDING', 'CONFIRMED', 'REJECTED'];
 const monthByStatus = {
   PENDING: '04',
   CONFIRMED: '05',
-  CANCELLED: '06'
+  REJECTED: '06'
 };
 
 const bookings = statuses.flatMap((status, groupIndex) =>

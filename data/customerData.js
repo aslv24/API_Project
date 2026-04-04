@@ -17,7 +17,7 @@ const customers = Array.from({ length: 120 }, (_, index) => {
   return {
     id,
     name: `${firstName} ${lastName}`,
-    phone: `9${String(id).padStart(9, '0')}`
+    email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${id}@mail.com`
   };
 });
 

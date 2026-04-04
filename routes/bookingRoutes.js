@@ -36,12 +36,35 @@ const role = require('../middleware/roleMiddleware');
  *           example: 5
  *       - in: query
  *         name: status
+ *         description: Optional status filter. Leave empty to view all bookings.
  *         schema:
  *           type: string
- *           enum: [PENDING, CONFIRMED, CANCELLED]
+ *           enum: [PENDING, CONFIRMED, REJECTED]
  *     responses:
  *       200:
  *         description: List of bookings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaginatedBookingsResponse'
+ *       400:
+ *         description: Invalid pagination or status filter
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get('/', auth.bearerAuth, controller.getBookings);
 
@@ -59,12 +82,44 @@ router.get('/', auth.bearerAuth, controller.getBookings);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Booking'
+ *             $ref: '#/components/schemas/BookingCreateRequest'
  *     responses:
  *       201:
  *         description: Booking created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookingMutationResponse'
+ *       400:
+ *         description: Invalid booking input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Room or customer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
- *         description: Room already booked
+ *         description: Room unavailable or already booked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.post('/', auth.bearerAuth, controller.createBooking);
 
@@ -85,6 +140,28 @@ router.post('/', auth.bearerAuth, controller.createBooking);
  *     responses:
  *       200:
  *         description: Booking approved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookingMutationResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid token or insufficient role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Booking not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.put(
   '/approve/:id',
@@ -113,28 +190,44 @@ router.put(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               roomId:
- *                 type: integer
- *               customerId:
- *                 type: integer
- *               fromDate:
- *                 type: string
- *                 example: "2026-04-02"
- *               toDate:
- *                 type: string
- *                 example: "2026-04-05"
- *               status:
- *                 type: string
- *                 enum: [PENDING, CONFIRMED, CANCELLED]
+ *             $ref: '#/components/schemas/BookingUpdateRequest'
  *     responses:
  *       200:
  *         description: Booking updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookingMutationResponse'
+ *       400:
+ *         description: Invalid booking input or status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid token or access denied
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Booking, room, or customer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       409:
  *         description: Room already booked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.patch('/:id', auth.bearerAuth, controller.patchBooking);
 
@@ -155,6 +248,28 @@ router.patch('/:id', auth.bearerAuth, controller.patchBooking);
  *     responses:
  *       200:
  *         description: Booking rejected
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookingMutationResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid token or insufficient role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Booking not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.put(
   '/reject/:id',
@@ -181,8 +296,28 @@ router.put(
  *     responses:
  *       200:
  *         description: Booking deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/BookingMutationResponse'
+ *       401:
+ *         description: Missing bearer token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Invalid token or access denied
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       404:
  *         description: Booking not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.delete('/:id', auth.bearerAuth, controller.deleteBooking);
 

@@ -1,10 +1,15 @@
 let customers = require('../data/customerData');
+let users = require('../data/userData');
+const { getPagination, isValidEmail } = require('../utils/requestValidators');
 
 exports.getCustomers = (req, res) => {
-    let { page = 1, limit = 5 } = req.query;
+    const pagination = getPagination(req.query);
 
-    page = parseInt(page);
-    limit = parseInt(limit);
+    if (pagination.error) {
+        return res.status(400).json({ message: pagination.error });
+    }
+
+    const { page, limit } = pagination;
 
     const start = (page - 1) * limit;
     const end = page * limit;
@@ -24,14 +29,39 @@ exports.patchCustomer = (req, res) => {
         return res.status(404).json({ message: "Customer not found" });
     }
 
-    const { name, phone } = req.body;
+    const { name, email } = req.body;
 
     if (name !== undefined) {
-        customer.name = name;
+        if (typeof name !== 'string' || !name.trim()) {
+            return res.status(400).json({ message: "Name must be a valid string" });
+        }
+        customer.name = name.trim();
     }
 
-    if (phone !== undefined) {
-        customer.phone = phone;
+    if (email !== undefined) {
+        const normalizedEmail = String(email).trim().toLowerCase();
+
+        if (!isValidEmail(normalizedEmail)) {
+            return res.status(400).json({ message: "Email must be in mail@mail.com format" });
+        }
+
+        const emailInUseByCustomer = customers.some(
+            c => c.id !== customer.id && c.email === normalizedEmail
+        );
+        const emailInUseByUser = users.some(
+            user => user.customerId !== customer.id && user.email === normalizedEmail
+        );
+
+        if (emailInUseByCustomer || emailInUseByUser) {
+            return res.status(409).json({ message: "Email already exists" });
+        }
+
+        customer.email = normalizedEmail;
+
+        const linkedUser = users.find(user => user.customerId === customer.id);
+        if (linkedUser) {
+            linkedUser.email = normalizedEmail;
+        }
     }
 
     res.json({
